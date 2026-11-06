@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAVB Bank</title>
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --card: #ffffff;
+            --text: #1d2330;
+            --muted: #6b7280;
+            --border: #e2e5ea;
+            --accent: #1f5eff;
+            --accent-text: #ffffff;
+            --ok-bg: #e8f6ee;
+            --ok-text: #146c3a;
+            --err-bg: #fdecec;
+            --err-text: #b42318;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #12151b;
+                --card: #1b1f27;
+                --text: #e7e9ee;
+                --muted: #9aa1ad;
+                --border: #2c323d;
+                --accent: #4c7dff;
+                --ok-bg: #143322;
+                --ok-text: #7fd8a4;
+                --err-bg: #3a1a1a;
+                --err-text: #ff9b91;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            padding: 24px 16px 8px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header h1 { margin: 0; font-size: 1.6rem; }
+        header p { margin: 4px 0 0; color: var(--muted); }
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .card h2 { margin: 0 0 12px; font-size: 1.05rem; }
+        label { display: block; font-size: 0.85rem; color: var(--muted); margin: 10px 0 4px; }
+        input, select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        .buttons { display: flex; gap: 8px; margin-top: 14px; }
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: var(--accent-text);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        button.secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        button:hover { opacity: 0.9; }
+        #result {
+            max-width: 960px;
+            margin: 0 auto 32px;
+            padding: 0 16px;
+        }
+        .message {
+            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1px solid var(--border);
+            background: var(--card);
+        }
+        .message.ok { background: var(--ok-bg); color: var(--ok-text); border-color: transparent; }
+        .message.err { background: var(--err-bg); color: var(--err-text); border-color: transparent; }
+        .account-row { display: flex; justify-content: space-between; padding: 4px 0; gap: 12px; }
+        .account-row span:first-child { opacity: 0.75; }
+        .balance { font-size: 1.6rem; font-weight: 600; margin: 4px 0 10px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>DAVB Bank</h1>
+    <p>Interfață simplă pentru API-ul băncii</p>
+</header>
+
+<div id="result"></div>
+
+<main>
+    <section class="card">
+        <h2>Deschide cont</h2>
+        <label for="ownerName">Nume titular</label>
+        <input id="ownerName" placeholder="ex. David Poturlu">
+        <label for="currency">Monedă</label>
+        <select id="currency">
+            <option>RON</option>
+            <option>EUR</option>
+            <option>USD</option>
+        </select>
+        <div class="buttons">
+            <button onclick="openAccount()">Deschide</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Vezi cont</h2>
+        <label for="findIban">IBAN</label>
+        <input id="findIban" placeholder="RO49DAVB0000000001">
+        <div class="buttons">
+            <button onclick="findAccount()">Caută</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Depunere / retragere</h2>
+        <label for="opIban">IBAN</label>
+        <input id="opIban" placeholder="RO49DAVB0000000001">
+        <label for="opAmount">Sumă</label>
+        <input id="opAmount" type="number" step="0.01" placeholder="100">
+        <div class="buttons">
+            <button onclick="moveMoney('deposit')">Depune</button>
+            <button class="secondary" onclick="moveMoney('withdraw')">Retrage</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Transfer</h2>
+        <label for="fromIban">Din contul</label>
+        <input id="fromIban" placeholder="RO49DAVB0000000001">
+        <label for="toIban">În contul</label>
+        <input id="toIban" placeholder="RO49DAVB0000000002">
+        <label for="transferAmount">Sumă</label>
+        <input id="transferAmount" type="number" step="0.01" placeholder="50">
+        <div class="buttons">
+            <button onclick="transfer()">Trimite</button>
+        </div>
+    </section>
+</main>
+
+<script>
+    function value(id) {
+        return document.getElementById(id).value.trim();
+    }
+
+    function amount(id) {
+        const text = value(id);
+        return text === "" ? null : Number(text);
+    }
+
+    async function callApi(method, url, body) {
+        const options = { method: method, headers: {} };
+        if (body !== undefined) {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
+        try {
+            const response = await fetch(url, options);
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (e) {
+                data = null;
+            }
+            if (!response.ok) {
+                const message = data && data.error ? data.error : "Eroare " + response.status;
+                showError(message);
+                return null;
+            }
+            return data;
+        } catch (e) {
+            showError("Serverul nu răspunde. Este pornită aplicația?");
+            return null;
+        }
+    }
+
+    function showError(message) {
+        document.getElementById("result").innerHTML =
+            '<div class="message err"><strong>Eroare:</strong> ' + escapeHtml(message) + '</div>';
+    }
+
+    function showMessage(message) {
+        document.getElementById("result").innerHTML =
+            '<div class="message ok">' + escapeHtml(message) + '</div>';
+    }
+
+    function showAccount(account, title) {
+        document.getElementById("result").innerHTML =
+            '<div class="message">' +
+            '<strong>' + escapeHtml(title) + '</strong>' +
+            '<div class="balance">' + escapeHtml(String(account.balance)) + ' ' + escapeHtml(account.currency) + '</div>' +
+            row("Titular", account.ownerName) +
+            row("IBAN", account.iban) +
+            row("Stare", account.status) +
+            '</div>';
+        ["findIban", "opIban", "fromIban"].forEach(function (id) {
+            if (!document.getElementById(id).value) {
+                document.getElementById(id).value = account.iban;
+            }
+        });
+    }
+
+    function row(label, text) {
+        return '<div class="account-row"><span>' + label + '</span><span>' + escapeHtml(String(text)) + '</span></div>';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function openAccount() {
+        const account = await callApi("POST", "/accounts", {
+            ownerName: value("ownerName"),
+            currency: value("currency")
+        });
+        if (account) showAccount(account, "Cont deschis");
+    }
+
+    async function findAccount() {
+        const account = await callApi("GET", "/accounts/" + encodeURIComponent(value("findIban")));
+        if (account) showAccount(account, "Detalii cont");
+    }
+
+    async function moveMoney(type) {
+        const account = await callApi("POST", "/accounts/" + encodeURIComponent(value("opIban")) + "/" + type, {
+            amount: amount("opAmount")
+        });
+        if (account) showAccount(account, type === "deposit" ? "Depunere reușită" : "Retragere reușită");
+    }
+
+    async function transfer() {
+        const result = await callApi("POST", "/accounts/transfer", {
+            fromIban: value("fromIban"),
+            toIban: value("toIban"),
+            amount: amount("transferAmount")
+        });
+        if (result) showMessage(result.message);
+    }
+</script>
+
+</body>
+</html>
