@@ -1,6 +1,8 @@
 # Banking App
 
-A REST API for basic banking operations, built with Java and Spring Boot, using PostgreSQL for storage.
+A banking application with a REST API built in Java and Spring Boot, using PostgreSQL for storage and a simple web interface.
+
+![Banking App screenshot](docs/screenshot.png)
 
 ## Features
 
@@ -9,6 +11,7 @@ A REST API for basic banking operations, built with Java and Spring Boot, using 
 - Deposit and withdraw money
 - Transfer money between accounts
 - Clear error messages for invalid operations (insufficient funds, unknown IBAN, blocked account, invalid amounts)
+- Simple web interface for all operations, available at `http://localhost:8080`
 
 ## Tech stack
 
@@ -16,16 +19,18 @@ A REST API for basic banking operations, built with Java and Spring Boot, using 
 - Spring Boot (Web MVC, Data JPA)
 - PostgreSQL
 - Maven
+- HTML, CSS and JavaScript for the web interface
 
 ## Architecture
 
 ```
-Controller  →  Service  →  Repository  →  PostgreSQL
+Browser / client  →  Controller  →  Service  →  Repository  →  PostgreSQL
 ```
 
 - **Controller**: receives HTTP requests and returns JSON responses
 - **Service**: business logic (validation, transfers)
 - **Repository**: database access through Spring Data JPA
+- **Error handler**: turns exceptions into clear HTTP error responses
 
 ## How to run
 
@@ -33,7 +38,7 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 2. Run `src/main/resources/schema.sql` on it to create the tables
 3. Set the environment variable `DB_PASSWORD` to your PostgreSQL password
 4. Start the application (`BankingApplication`)
-5. The API is available at `http://localhost:8080`
+5. Open `http://localhost:8080` in your browser to use the web interface, or call the API directly (see below)
 
 ## API
 
@@ -47,11 +52,15 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 
 ### Example
 
+Request:
+
 ```bash
 curl -X POST http://localhost:8080/accounts \
   -H "Content-Type: application/json" \
   -d '{"ownerName":"David Poturlu","currency":"RON"}'
 ```
+
+Response:
 
 ```json
 {
@@ -64,6 +73,14 @@ curl -X POST http://localhost:8080/accounts \
 }
 ```
 
+Error example (withdrawing more than the balance):
+
+```json
+{
+  "error": "Insufficient funds: requested 5000, available 1000.00"
+}
+```
+
 ## Design decisions
 
 - **`BigDecimal` for money**: avoids the rounding errors of `double`
@@ -71,3 +88,9 @@ curl -X POST http://localhost:8080/accounts \
 - **`@Transactional` transfers**: if any step fails, the whole transfer is rolled back and no money is lost
 - **Database constraints** (`UNIQUE`, `NOT NULL`, `CHECK balance >= 0`) as a second layer of protection
 - **Database password in an environment variable**, never committed to the repository
+
+## Possible improvements
+
+- Transaction history for each account
+- User authentication
+- Automated tests
