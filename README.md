@@ -50,14 +50,14 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 ```bash
 curl -X POST http://localhost:8080/accounts \
   -H "Content-Type: application/json" \
-  -d '{"ownerName":"Ana Popescu","currency":"RON"}'
+  -d '{"ownerName":"David Poturlu","currency":"RON"}'
 ```
 
 ```json
 {
   "id": "3f2b8c1e-9a4d-4e7b-b6f1-2c8d5e9a7b03",
   "iban": "RO49DAVB0000000003",
-  "ownerName": "Ana Popescu",
+  "ownerName": "David Poturlu",
   "currency": "RON",
   "balance": 0,
   "status": "ACTIVE"
