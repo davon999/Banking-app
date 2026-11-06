@@ -1,5 +1,7 @@
 package ro.david;
 
+import ro.david.exception.AccountNotFoundException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
@@ -15,5 +17,13 @@ public class Bank {
         Account createdAccount = new Account(id, iban, ownerName, currency);
         accounts.put(iban, createdAccount);
         return createdAccount;
+    }
+
+    public Account findAccount(String iban){
+        Account account = accounts.get(iban);
+        if(account == null ){
+            throw new AccountNotFoundException("No account has been found with IBAN "+iban);
+        }
+        return account;
     }
 }
