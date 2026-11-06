@@ -3,37 +3,43 @@ package ro.david;
 import java.math.BigDecimal;
 
 public class Main {
-    static void main() {
+    public static void main(String[] args) {
         Bank bank = new Bank();
 
-        Account david = bank.openAccount("David", Currency.EUR);
+        Account david = bank.openAccount("David Regele", Currency.RON);
+        Account ana = bank.openAccount("Ana Popescu", Currency.RON);
+        Account john = bank.openAccount("John Smith", Currency.EUR);
 
-        System.out.println("Cont David: " + david.getIban() + " | id: " + david.getId() + " | " + david.getCurrency());
+        david.deposit(new BigDecimal("100"));
 
-        david.deposit(new BigDecimal("100.00"));
-        System.out.println("Sold dupa depunere: " + david.getBalance());
-
-        david.withdraw(new BigDecimal("30.50"));
-        System.out.println("Sold dupa retragere: " + david.getBalance());
+        bank.transfer(david.getIban(), ana.getIban(), new BigDecimal("40"));
+        System.out.println("Dupa transfer: David = " + david.getBalance() + ", Ana = " + ana.getBalance());
 
         try {
-            david.withdraw(new BigDecimal("500"));
+            bank.transfer(david.getIban(), ana.getIban(), new BigDecimal("500"));
+        } catch (Exception e) {
+            System.out.println("Eroare asteptata: " + e.getMessage());
+        }
+        System.out.println("Dupa transfer esuat: David = " + david.getBalance() + ", Ana = " + ana.getBalance());
+
+        try {
+            bank.transfer(david.getIban(), david.getIban(), new BigDecimal("10"));
         } catch (Exception e) {
             System.out.println("Eroare asteptata: " + e.getMessage());
         }
 
         try {
-            david.deposit(new BigDecimal("-10"));
+            bank.transfer(david.getIban(), john.getIban(), new BigDecimal("10"));
         } catch (Exception e) {
             System.out.println("Eroare asteptata: " + e.getMessage());
         }
 
         try {
-            david.deposit(null);
+            bank.transfer(david.getIban(), "RO49DAVB9999999999", new BigDecimal("10"));
         } catch (Exception e) {
             System.out.println("Eroare asteptata: " + e.getMessage());
         }
 
-        System.out.println("Sold final: " + david.getBalance());
+        System.out.println("Sold final: David = " + david.getBalance() + ", Ana = " + ana.getBalance());
     }
-    }
+}

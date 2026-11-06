@@ -5,6 +5,7 @@ import ro.david.exception.AccountNotFoundException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 public class Bank {
     private final Map<String, Account> accounts = new HashMap<>();
@@ -19,11 +20,28 @@ public class Bank {
         return createdAccount;
     }
 
-    public Account findAccount(String iban){
+    public Account findAccount(String iban) {
         Account account = accounts.get(iban);
-        if(account == null ){
-            throw new AccountNotFoundException("No account has been found with IBAN "+iban);
+        if (account == null) {
+            throw new AccountNotFoundException("No account has been found with IBAN " + iban);
         }
         return account;
+    }
+
+    public void transfer(String fromIban, String toIban, BigDecimal amount) {
+        if (fromIban.equals(toIban)) {
+            throw new IllegalArgumentException("Cannot transfer to the same account: " + fromIban);
+        }
+
+        Account from = findAccount(fromIban);
+        Account to = findAccount(toIban);
+
+        if (from.getCurrency() != to.getCurrency()) {
+            throw new IllegalArgumentException(
+                    "Currency mismatch: " + from.getCurrency() + " -> " + to.getCurrency());
+        }
+
+        from.withdraw(amount);
+        to.deposit(amount);
     }
 }
