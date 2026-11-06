@@ -1,6 +1,6 @@
 package ro.david;
 
-    enum Currency{
+    public enum Currency{
         RON,
         EUR,
         USD;

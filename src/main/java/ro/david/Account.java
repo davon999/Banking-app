@@ -1,21 +1,38 @@
 package ro.david;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import ro.david.exception.InsufficientFundsException;
 
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "accounts")
 public class Account {
+
+    @Id
+    private String id;
+    private String iban;
+    private String ownerName;
+
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
+
     private BigDecimal balance;
-    private final Currency currency;
+
+    @Enumerated(EnumType.STRING)
     private AccountStatus status;
-    private final String id;
-    private final String iban;
-    private final String ownerName;
 
     public enum AccountStatus {
         ACTIVE,
         BLOCKED,
-        CLOSED;
+        CLOSED
+    }
+
+    protected Account() {
     }
 
     public Account(String id, String iban, String ownerName, Currency currency) {
@@ -68,18 +85,16 @@ public class Account {
         if (this.status != AccountStatus.ACTIVE) {
             throw new IllegalStateException("Your account is currently: " + this.status);
         }
-
         if (value == null) {
             throw new IllegalArgumentException("Withdrawal amount must not be null");
-        }
-        if (this.balance.compareTo(value) < 0) {
-            throw new InsufficientFundsException("Insufficient funds: requested " + value + ", available " + this.balance);
         }
         if (value.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("You cannot withdraw " + value);
         }
+        if (this.balance.compareTo(value) < 0) {
+            throw new InsufficientFundsException(
+                    "Insufficient funds: requested " + value + ", available " + this.balance);
+        }
         this.balance = this.balance.subtract(value);
     }
 }
-
-
