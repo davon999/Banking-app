@@ -2,8 +2,6 @@
 
 A banking application with a REST API built in Java and Spring Boot, using PostgreSQL for storage and a simple web interface.
 
-![Banking App screenshot](docs/screenshot.png)
-
 ## Features
 
 - Open bank accounts (RON, EUR, USD) with automatically generated IBANs
